@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<title>Helena Daily Activities</title>
+<style>
+:root{
+  --lilac:#8a63c7;--lilac-dark:#6b46a8;--lilac-soft:#ece3fa;--lilac-line:#ddd0f0;
+  --bg:#f6f2fb;--card:#fff;--ink:#2e2347;--muted:#7b6f93;
+  --green:#22c55e;--green-soft:#e9fbf0;--red:#e5484d;--red-soft:#fdeceb;--amber:#f59e0b;--amber-soft:#fef3c7;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px system-ui,-apple-system,Segoe UI,Arial,sans-serif;-webkit-tap-highlight-color:transparent}
+header{background:linear-gradient(135deg,#a98be0 0%,#8a63c7 55%,#6b46a8 100%);color:#fff;text-align:center;padding:26px 16px 62px}
+header h1{margin:0;font-size:28px;letter-spacing:.2px}
+header p{margin:6px 0 0;color:#efe7fb;font-size:14px;font-weight:600}
+main{max-width:680px;margin:-42px auto 0;padding:0 12px 50px}
+.seg{display:grid;grid-template-columns:1fr 1fr;background:#fff;border-radius:16px;padding:5px;gap:5px;box-shadow:0 6px 22px #4a2d8420;margin-bottom:14px}
+.seg button{border:0;background:transparent;font:inherit;font-weight:800;font-size:15px;color:var(--muted);padding:12px 8px;border-radius:12px;cursor:pointer;min-height:46px}
+.seg button.on{background:var(--lilac);color:#fff;box-shadow:0 3px 10px #8a63c755}
+.tabs{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:14px}
+.tab{border:2px solid var(--lilac-line);background:#fff;border-radius:14px;padding:9px 2px 8px;font:inherit;font-size:13px;font-weight:800;color:var(--ink);cursor:pointer;text-align:center;line-height:1.25;min-height:54px}
+.tab small{display:block;font-size:11px;font-weight:700;color:var(--muted);margin-top:2px}
+.tab.today{border-color:var(--amber)}
+.tab.active{background:var(--lilac);border-color:var(--lilac);color:#fff}
+.tab.active small{color:#efe7fb}
+.tab.complete small{color:#16a34a}
+.tab.active.complete small{color:#c9f7da}
+.card{background:var(--card);border-radius:20px;padding:18px;box-shadow:0 4px 20px #4a2d8416;margin-bottom:14px}
+.dayhead{display:flex;align-items:center;gap:16px;margin-bottom:16px}
+.ring{position:relative;width:84px;height:84px;flex:none}
+.ring svg{width:84px;height:84px;transform:rotate(-90deg)}
+.ring .track{stroke:var(--lilac-soft)}
+.ring .fill{stroke:var(--lilac);transition:stroke-dashoffset .4s}
+.ring.full .fill{stroke:var(--green)}
+.ring b{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:18px}
+.dayhead h2{margin:0;font-size:24px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.dayhead p{margin:4px 0 0;color:var(--muted);font-weight:700;font-size:14px}
+.todaytag{background:var(--amber-soft);color:#92400e;font-size:11px;font-weight:800;padding:3px 9px;border-radius:99px}
+.task{display:flex;align-items:center;gap:14px;width:100%;text-align:left;background:#faf7fd;border:2px solid var(--lilac-line);border-radius:16px;padding:12px 14px;margin:0 0 10px;font:inherit;cursor:pointer;min-height:68px;color:var(--ink);transition:transform .1s}
+.task:active{transform:scale(.985)}
+.ico{flex:none;width:44px;height:44px;border-radius:12px;background:var(--lilac-soft);display:flex;align-items:center;justify-content:center;font-size:23px}
+.label{flex:1;font-size:17px;font-weight:750;line-height:1.3}
+.box{flex:none;width:34px;height:34px;border-radius:50%;border:3px solid #b9a3de;background:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff;font-weight:900}
+.task.done{background:var(--green-soft);border-color:#8fe3ae}
+.task.done .ico{background:#cdf5dc}
+.task.done .box{background:var(--green);border-color:var(--green)}
+.task.done .label{color:#4f7a62;text-decoration:line-through}
+.msg{display:none;text-align:center;font-size:17px;font-weight:800;color:#16a34a;margin:4px 0 0}
+.msg.show{display:block}
+.task:focus-visible,.tab:focus-visible,.seg button:focus-visible,.reset:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+
+/* week summary */
+.hero{display:flex;align-items:center;gap:18px}
+.hero .ring{width:112px;height:112px}
+.hero .ring svg{width:112px;height:112px}
+.hero .ring b{font-size:24px}
+.hero h2{margin:0 0 4px;font-size:22px}
+.hero p{margin:0;color:var(--muted);font-weight:650;font-size:14px;line-height:1.4}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px}
+.stat{border-radius:14px;padding:12px 6px;text-align:center}
+.stat b{display:block;font-size:28px;line-height:1.1}
+.stat span{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.4px}
+.stat.s-done{background:var(--green-soft);color:#15803d}
+.stat.s-miss{background:var(--red-soft);color:#c2272d}
+.stat.s-todo{background:var(--lilac-soft);color:var(--lilac-dark)}
+.card h3{margin:0 0 12px;font-size:17px}
+.row{display:grid;grid-template-columns:92px 1fr 46px;gap:10px;align-items:center;padding:8px 0;border-top:1px solid #f0e9f8}
+.row:first-of-type{border-top:0}
+.row .nm{font-weight:800;font-size:14px}
+.row .nm small{display:block;font-weight:700;color:var(--muted);font-size:11px}
+.row .ct{font-weight:800;font-size:14px;text-align:right}
+.pbar{height:12px;background:var(--lilac-soft);border-radius:99px;overflow:hidden;display:flex}
+.pbar i{display:block;height:100%}
+.pbar .g{background:var(--green)}
+.pbar .r{background:var(--red)}
+.chip{display:inline-block;font-size:10px;font-weight:800;border-radius:99px;padding:2px 7px;margin-top:2px}
+.chip.ok{background:var(--green-soft);color:#15803d}
+.chip.bad{background:var(--red-soft);color:#c2272d}
+.chip.now{background:var(--amber-soft);color:#92400e}
+.chip.up{background:var(--lilac-soft);color:var(--lilac-dark)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;font-weight:700;color:var(--muted);margin-top:10px}
+.legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+.legend .lg::before{background:var(--green)}.legend .lr::before{background:var(--red)}.legend .lp::before{background:var(--lilac-soft);border:1px solid var(--lilac-line)}
+.arow{display:grid;grid-template-columns:1fr 54px;gap:4px 10px;align-items:center;padding:8px 0;border-top:1px solid #f0e9f8}
+.arow:first-of-type{border-top:0}
+.arow .nm{font-weight:750;font-size:14px}
+.arow .ct{font-weight:800;font-size:14px;text-align:right}
+.arow .pbar{grid-column:1/-1}
+.footer{display:flex;justify-content:center;margin-top:6px}
+.reset{border:0;background:var(--lilac-soft);color:var(--lilac-dark);font:inherit;font-weight:800;font-size:14px;padding:12px 18px;border-radius:12px;cursor:pointer;min-height:44px}
+.note{text-align:center;color:var(--muted);font-size:12px;margin-top:12px}
+.hidden{display:none}
+@media(max-width:420px){.row{grid-template-columns:78px 1fr 42px}.hero .ring,.hero .ring svg{width:92px;height:92px}.hero h2{font-size:19px}}
+@media print{.seg,.tabs,.footer,.note{display:none}header{background:#8a63c7!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}#daily{display:none!important}#week{display:block!important}}
+</style>
+</head>
+<body>
+<header>
+  <h1>🌸 Helena Daily Activities</h1>
+  <p id="sub"></p>
+</header>
+<main>
+  <div class="seg" role="tablist">
+    <button type="button" id="bDaily" class="on" role="tab">📅 Daily</button>
+    <button type="button" id="bWeek" role="tab">📊 Week summary</button>
+  </div>
+
+  <div id="daily">
+    <div class="tabs" id="tabs"></div>
+    <section class="card">
+      <div class="dayhead">
+        <div class="ring" id="dayRing"></div>
+        <div>
+          <h2 id="dayTitle"></h2>
+          <p id="dayCount"></p>
+        </div>
+      </div>
+      <div id="tasks"></div>
+      <p class="msg" id="msg">🎉 All done for the day. Great job!</p>
+    </section>
+  </div>
+
+  <div id="week" class="hidden">
+    <section class="card">
+      <div class="hero">
+        <div class="ring" id="weekRing"></div>
+        <div>
+          <h2 id="weekHead"></h2>
+          <p id="weekText"></p>
+        </div>
+      </div>
+      <div class="stats">
+        <div class="stat s-done"><b id="nDone">0</b><span>Done</span></div>
+        <div class="stat s-miss"><b id="nMiss">0</b><span>Not done</span></div>
+        <div class="stat s-todo"><b id="nTodo">0</b><span>Still to do</span></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h3>Day by day</h3>
+      <div id="dayRows"></div>
+      <div class="legend"><span class="lg">Done</span><span class="lr">Not done (past days)</span><span class="lp">Still to do</span></div>
+    </section>
+
+    <section class="card">
+      <h3>By activity</h3>
+      <div id="actRows"></div>
+    </section>
+  </div>
+
+  <div class="footer"><button class="reset" id="reset" type="button">Reset the week</button></div>
+  <p class="note">Checkmarks are saved on this device only and start fresh each Monday.</p>
+</main>
+
+<script>
+(function(){
+'use strict';
+
+// ===== EDIT HERE: add, remove or rename activities =====
+// Every task shows up on every day, except on days listed in "skip".
+// Day numbers: 0=Monday, 1=Tuesday, 2=Wednesday, 3=Thursday, 4=Friday, 5=Saturday, 6=Sunday.
+var TASKS=[
+  {id:'bed',      icon:'🛏️', label:'Make her bed'},
+  {id:'litter',   icon:'🐾', label:"Clean Gladys' litter"},
+  {id:'dishes',   icon:'🍽️', label:'Wash her lunch dishes', skip:[0,5,6]},
+  {id:'read',     icon:'📖', label:'Read 30 minutes'},
+  {id:'bathroom', icon:'🚿', label:'Clean up bathroom'},
+  {id:'polite',   icon:'😊', label:'Yes, Helena was polite'}
+];
+// =======================================================
+
+var DAYS=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+var SHORT=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+var KEY='home-activities-v1';
+
+function pad(n){return n<10?'0'+n:''+n;}
+var now=new Date();
+var monday=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+monday.setDate(monday.getDate()-((monday.getDay()+6)%7));
+var weekKey=monday.getFullYear()+'-'+pad(monday.getMonth()+1)+'-'+pad(monday.getDate());
+var todayIdx=(now.getDay()+6)%7;
+var current=todayIdx;
+var done={};
+
+function load(){
+  try{var s=JSON.parse(localStorage.getItem(KEY)||'null');if(s&&s.week===weekKey&&s.done)done=s.done;}catch(e){}
+}
+function save(){
+  try{localStorage.setItem(KEY,JSON.stringify({week:weekKey,done:done}));}catch(e){}
+}
+function tasksFor(i){return TASKS.filter(function(t){return !(t.skip&&t.skip.indexOf(i)!==-1);});}
+function dayDone(i){var d=done[i]||{};return tasksFor(i).filter(function(t){return d[t.id];}).length;}
+function pct(a,b){return b?Math.round(a/b*100):0;}
+
+function ring(el,percent,label){
+  var r=el.classList.contains('hero')||el.id==='weekRing'?48:36;
+  var size=el.id==='weekRing'?112:84;
+  var c=2*Math.PI*r,off=c*(1-percent/100);
+  var half=size/2;
+  el.className='ring'+(percent>=100?' full':'');
+  el.innerHTML='<svg viewBox="0 0 '+size+' '+size+'"><circle class="track" cx="'+half+'" cy="'+half+'" r="'+r+'" fill="none" stroke-width="10"/>'+
+   '<circle class="fill" cx="'+half+'" cy="'+half+'" r="'+r+'" fill="none" stroke-width="10" stroke-linecap="round" stroke-dasharray="'+c+'" stroke-dashoffset="'+off+'"/></svg><b>'+label+'</b>';
+}
+
+function renderTabs(){
+  var el=document.getElementById('tabs');el.innerHTML='';
+  DAYS.forEach(function(n,i){
+    var d=dayDone(i),t=tasksFor(i).length;
+    var b=document.createElement('button');b.type='button';
+    b.className='tab'+(i===current?' active':'')+(i===todayIdx?' today':'')+(d===t?' complete':'');
+    b.innerHTML=SHORT[i]+'<small>'+(d===t?'✓':d+'/'+t)+'</small>';
+    b.addEventListener('click',function(){current=i;render();});
+    el.appendChild(b);
+  });
+}
+
+function renderDay(){
+  var list=tasksFor(current),d=done[current]||{},n=dayDone(current),t=list.length;
+  var title=document.getElementById('dayTitle');
+  title.textContent=DAYS[current];
+  if(current===todayIdx){var tag=document.createElement('span');tag.className='todaytag';tag.textContent='TODAY';title.appendChild(tag);}
+  document.getElementById('dayCount').textContent=n+' of '+t+' activities done';
+  ring(document.getElementById('dayRing'),pct(n,t),n+'/'+t);
+  document.getElementById('msg').className='msg'+(n===t&&t?' show':'');
+  var box=document.getElementById('tasks');box.innerHTML='';
+  list.forEach(function(task){
+    var b=document.createElement('button');b.type='button';
+    b.className='task'+(d[task.id]?' done':'');
+    b.setAttribute('aria-pressed',d[task.id]?'true':'false');
+    b.innerHTML='<span class="ico">'+task.icon+'</span><span class="label"></span><span class="box">'+(d[task.id]?'✓':'')+'</span>';
+    b.querySelector('.label').textContent=task.label;
+    b.addEventListener('click',function(){
+      if(!done[current])done[current]={};
+      done[current][task.id]=!done[current][task.id];
+      save();render();
+    });
+    box.appendChild(b);
+  });
+}
+
+function renderWeek(){
+  var possible=0,got=0,missed=0,todo=0;
+  for(var i=0;i<7;i++){
+    var t=tasksFor(i).length,d=dayDone(i);
+    possible+=t;got+=d;
+    if(i<todayIdx)missed+=t-d;else todo+=t-d;
+  }
+  var p=pct(got,possible);
+  ring(document.getElementById('weekRing'),p,p+'%');
+  document.getElementById('nDone').textContent=got;
+  document.getElementById('nMiss').textContent=missed;
+  document.getElementById('nTodo').textContent=todo;
+  var head,text;
+  if(got===possible&&possible){head='Perfect week! 🏆';text='Every single activity is done.';}
+  else if(missed===0&&got>0){head='Great so far! ⭐';text='Nothing missed on past days. Keep it going!';}
+  else if(missed===0){head='Fresh week 🌸';text='Nothing missed yet. Time to get started!';}
+  else if(p>=80){head='Great week! ⭐';text='Just a few activities were missed.';}
+  else if(p>=50){head='Good effort 👍';text='More than half done. Room to improve.';}
+  else{head='Needs a push 💪';text='Several activities have been missed so far.';}
+  document.getElementById('weekHead').textContent=head;
+  document.getElementById('weekText').textContent=got+' of '+possible+' activities done this week.';
+  document.getElementById('weekText').insertAdjacentText('beforeend',' '+text);
+
+  var rows=document.getElementById('dayRows');rows.innerHTML='';
+  DAYS.forEach(function(n,i){
+    var t=tasksFor(i).length,d=dayDone(i),left=t-d;
+    var chip;
+    if(d===t)chip='<span class="chip ok">Complete</span>';
+    else if(i<todayIdx)chip='<span class="chip bad">'+left+' not done</span>';
+    else if(i===todayIdx)chip='<span class="chip now">Today</span>';
+    else chip='<span class="chip up">Upcoming</span>';
+    var redW=i<todayIdx?pct(left,t):0;
+    var row=document.createElement('div');row.className='row';
+    row.innerHTML='<div class="nm">'+n+'<br>'+chip+'</div>'+
+      '<div class="pbar"><i class="g" style="width:'+pct(d,t)+'%"></i><i class="r" style="width:'+redW+'%"></i></div>'+
+      '<div class="ct">'+d+'/'+t+'</div>';
+    rows.appendChild(row);
+  });
+
+  var act=document.getElementById('actRows');act.innerHTML='';
+  TASKS.forEach(function(task){
+    var days=0,ok=0,miss=0;
+    for(var i=0;i<7;i++){
+      if(task.skip&&task.skip.indexOf(i)!==-1)continue;
+      days++;
+      if(done[i]&&done[i][task.id])ok++;else if(i<todayIdx)miss++;
+    }
+    var row=document.createElement('div');row.className='arow';
+    row.innerHTML='<div class="nm"></div><div class="ct">'+ok+'/'+days+'</div>'+
+      '<div class="pbar"><i class="g" style="width:'+pct(ok,days)+'%"></i><i class="r" style="width:'+pct(miss,days)+'%"></i></div>';
+    row.querySelector('.nm').textContent=task.icon+' '+task.label;
+    act.appendChild(row);
+  });
+}
+
+var view='daily';
+function setView(v){
+  view=v;
+  document.getElementById('daily').className=v==='daily'?'':'hidden';
+  document.getElementById('week').className=v==='week'?'':'hidden';
+  document.getElementById('bDaily').className=v==='daily'?'on':'';
+  document.getElementById('bWeek').className=v==='week'?'on':'';
+  render();
+}
+
+function render(){
+  document.getElementById('sub').textContent='Today is '+DAYS[todayIdx];
+  renderTabs();renderDay();renderWeek();
+}
+
+document.getElementById('bDaily').addEventListener('click',function(){setView('daily');});
+document.getElementById('bWeek').addEventListener('click',function(){setView('week');});
+document.getElementById('reset').addEventListener('click',function(){
+  if(window.confirm('Clear all checkmarks for this week?')){done={};save();render();}
+});
+
+load();render();
+})();
+</script>
+</body>
+</html>
